@@ -82,7 +82,7 @@
 
 EXP_ST u8 *in_dir,                    /* Input directory with test cases  */
           *out_file,                  /* File to fuzz, if any             */
-          *persist_file               /* File to create (Persist all)     */
+          *persist_file,              /* File to create (Persist all)     */
           *out_dir,                   /* Working & output directory       */
           *sync_dir,                  /* Synchronization directory        */
           *sync_id,                   /* Fuzzer ID                        */
