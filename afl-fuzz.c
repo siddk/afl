@@ -82,6 +82,7 @@
 
 EXP_ST u8 *in_dir,                    /* Input directory with test cases  */
           *out_file,                  /* File to fuzz, if any             */
+          *persist_file               /* File to create (Persist all)     */
           *out_dir,                   /* Working & output directory       */
           *sync_dir,                  /* Synchronization directory        */
           *sync_id,                   /* Fuzzer ID                        */
@@ -161,6 +162,7 @@ EXP_ST u32 queued_paths,              /* Total number of queued testcases */
            useless_at_start,          /* Number of useless starting paths */
            var_byte_count,            /* Bitmap bytes with var behavior   */
            current_entry,             /* Current queue entry ID           */
+           persist_count = 0,         /* Counter for Sidd Files           */
            havoc_div = 1;             /* Cycle count divisor for havoc    */
 
 EXP_ST u64 total_crashes,             /* Total number of crashes          */
@@ -2463,6 +2465,7 @@ static u8 run_target(char** argv, u32 timeout) {
 static void write_to_testcase(void* mem, u32 len) {
 
   s32 fd = out_fd;
+  s32 persist_fd;
 
   if (out_file) {
 
@@ -2475,6 +2478,14 @@ static void write_to_testcase(void* mem, u32 len) {
   } else lseek(fd, 0, SEEK_SET);
 
   ck_write(fd, mem, len, out_file);
+
+  /* START - Persist all Inputs Logic */
+  persist_file = alloc_printf("%s/persist_%d", out_dir, persist_count++);
+  persist_fd = open(persist_file, O_WRONLY | O_CREAT | O_EXCL, 0600);
+  if (persist_fd < 0) PFATAL("Unable to create '%s'", persist_file);
+  ck_write(persist_fd, mem, len, persist_file);
+  close(persist_fd);
+  /* END - Persist all Inputs Logic */
 
   if (!out_file) {
 
